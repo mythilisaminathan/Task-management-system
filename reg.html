@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Form</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        background-color: purple;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      .red {
+        color: red;
+        font-size: 12px;
+      }
+      .login {
+        text-decoration: none;
+        color: black;
+        font-size: 12px;
+        font-weight: 800;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="registrationForm">
+      <h2>Registration Form</h2>
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" />
+
+      <label for="confirmPassword">Confirm Password:</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" />
+
+      <input type="file" id="imageInput" accept="image/*" />
+
+      <button onclick="validateForm(event)">Register</button>
+      <a href="login.html" class="login"
+        >Already Have An Account?Go To Login Page</a
+      >
+    </form>
+    <script>
+      function validateForm(e) {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        const imageFile = document.getElementById("imageInput").files[0];
+
+        if (password !== confirmPassword) {
+          alert("Passwords don't match.");
+          return;
+        }
+
+        if (imageFile) {
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            const imageData = e.target.result;
+
+            const userData = {
+              name: username,
+              email: email,
+              image: imageData,
+              password: password,
+              confirmPassword: confirmPassword,
+            };
+
+            const existingUsersString = localStorage.getItem("data");
+            const existingUsers = existingUsersString
+              ? JSON.parse(existingUsersString)
+              : [];
+
+            const userExists = existingUsers.some(
+              (user) => user.name === username && user.email === email
+            );
+
+            if (userExists) {
+              alert("User already exists.");
+            } else {
+              existingUsers.push(userData);
+              localStorage.setItem("data", JSON.stringify(existingUsers));
+              window.location.href = "login.html";
+            }
+          };
+
+          reader.onerror = function (e) {
+            alert("Error reading the image file.");
+          };
+
+          reader.readAsDataURL(imageFile);
+        } else {
+          alert("Please select an image.");
+        }
+      }
+    </script>
+  </body>
+</html>

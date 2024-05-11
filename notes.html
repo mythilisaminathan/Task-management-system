@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Management</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      section {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+      }
+
+      header {
+        background-color: purple;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #dashboardImage {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
+
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+      }
+
+      h2 {
+        color: #333;
+      }
+
+      label {
+        display: block;
+        margin-top: 10px;
+        color: #333;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      button {
+        background-color: purple;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .task-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .div {
+        border: 1px solid plum;
+        margin: 30px;
+        border-radius: 8px;
+        padding: 20px;
+        width: 400px;
+        box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .div:hover {
+        background-color: plum;
+        color: white;
+      }
+
+      .delete,
+      .rem {
+        background-color: #ccc;
+        color: #333;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+
+      .delete {
+        background-color: #ccc;
+        color: #333;
+      }
+
+      .main-div {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .search {
+        display: flex;
+        text-align: center;
+      }
+
+      #input {
+        width: 40%;
+      }
+
+      .sel {
+        padding: 5px;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .head {
+        margin-top: 10px;
+      }
+
+      .desc {
+        margin-top: 10px;
+      }
+
+      .logout {
+        background-color: white;
+        color: purple;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div>
+        <img id="dashboardImage" />
+        <span id="displayText"></span>
+      </div>
+      <a href="login.html"><button class="logout">Log Out</button></a>
+    </header>
+
+    <section>
+      <form id="form">
+        <h2>Task Management</h2>
+        <label for="taskName">Task Name:</label>
+        <input
+          type="text"
+          id="taskName"
+          name="taskName"
+          placeholder="Enter task name"
+          required
+        />
+
+        <label for="taskDescription">Task Description:</label>
+        <textarea
+          id="taskDescription"
+          name="taskDescription"
+          placeholder="Enter task description"
+          rows="4"
+          required
+        ></textarea>
+
+        <button type="button" id="btn">Add Task</button>
+      </form>
+    </section>
+
+    <div id="main-div" class="task-container"></div>
+
+    <script>
+     window.onload = function () {
+    const sessionData = sessionStorage.getItem("login");
+
+    if (!sessionData) {
+      window.location.href = "login.html";
+    }
+
+    // Retrieve user data from localStorage
+    const userData = localStorage.getItem("data");
+    if (userData) {
+      const user = JSON.parse(userData);
+
+      // Display the user image
+      var photo = document.getElementById("dashboardImage");
+      photo.src = user.image;
+
+      // Display the user name
+      var username = document.getElementById("displayText");
+      username.innerHTML = "Hello " + user.name;
+    }
+
+
+        const main = document.getElementById("main-div");
+        const button = document.getElementById("btn");
+
+        // Retrieve tasks from local storage or initialize an empty array
+        const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+        // Display existing tasks
+        storedTasks.forEach((task) => {
+          const div = createTaskCard(task.taskName, task.description);
+          main.appendChild(div);
+        });
+
+        button.addEventListener("click", () => {
+          var taskName = document.getElementById("taskName").value;
+          var des = document.getElementById("taskDescription").value;
+
+          if (taskName === "" || des === "") {
+            alert("Please fill in both task name and description.");
+          } else {
+            const div = createTaskCard(taskName, des);
+            main.appendChild(div);
+
+            // Save tasks to local storage
+            const tasks = [...storedTasks, { taskName, description: des }];
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+
+            const deleteBtn = div.querySelector(".delete");
+            deleteBtn.addEventListener("click", () => {
+              div.remove();
+              // Remove task from local storage
+              const updatedTasks = tasks.filter(
+                (t) => t.taskName !== taskName
+              );
+              localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+            });
+
+            const editBtn = div.querySelector(".rem");
+            editBtn.addEventListener("click", () => {
+              const updatedTaskName = prompt(
+                "Enter updated task name:",
+                taskName
+              );
+              const updatedDescription = prompt(
+                "Enter updated description:",
+                des
+              );
+
+              if (updatedTaskName !== null && updatedDescription !== null) {
+                div.querySelector(
+                  ".head"
+                ).textContent = `Task: ${updatedTaskName}`;
+                div.querySelector(
+                  ".desc"
+                ).textContent = `Description: ${updatedDescription}`;
+
+                // Update task in local storage
+                const updatedTasks = tasks.map((t) =>
+                  t.taskName === taskName
+                    ? {
+                        taskName: updatedTaskName,
+                        description: updatedDescription,
+                      }
+                    : t
+                );
+
+                localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+              }
+            });
+          }
+        });
+
+        function createTaskCard(taskName, des) {
+          const div = document.createElement("div");
+          div.className = "div";
+
+          const head = document.createElement("p");
+          head.className = "head";
+          head.textContent = `Task: ${taskName}`;
+          div.appendChild(head);
+
+          const para = document.createElement("h4");
+          para.className = "desc";
+          para.textContent = `Description: ${des}`;
+          div.appendChild(para);
+
+          const selectElement = document.createElement("select");
+          selectElement.className = "sel";
+
+          const option1 = document.createElement("option");
+          option1.value = "Done";
+          option1.text = "Done";
+
+          const option2 = document.createElement("option");
+          option2.value = "Partially Completed";
+          option2.text = "Partially Completed";
+
+          const option3 = document.createElement("option");
+          option3.value = "Open";
+          option3.text = "Open";
+
+          selectElement.add(option1);
+          selectElement.add(option2);
+          selectElement.add(option3);
+
+          selectElement.addEventListener("change", () => {
+            const selectopt = selectElement.value;
+
+            if (selectopt === "Done") {
+              alert("Well done! 👏");
+            } else if (selectopt === "Partially Completed") {
+              alert("Try to complete your task. 😥");
+            } else {
+              alert("Oops!... 😔");
+            }
+          });
+
+          div.appendChild(selectElement);
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "delete";
+          deleteBtn.className = "delete";
+          div.appendChild(deleteBtn);
+
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "edit";
+          editBtn.className = "rem";
+          div.appendChild(editBtn);
+
+          return div;
+        }
+      };
+    </script>
+  </body>
+</html>
